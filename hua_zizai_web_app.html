@@ -1,0 +1,43 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>花自在｜入住系統</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif;background:#f3f5f2;margin:0;color:#26312b}
+header{background:#31463b;color:white;padding:22px}main{max-width:650px;margin:auto;padding:14px}
+.card{background:white;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0001}
+h1{margin:0;font-size:22px}h2{font-size:17px}label{font-size:13px;font-weight:bold;display:block;margin:9px 0 5px}
+input,select,textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccd4ce;border-radius:10px;font-size:16px}
+textarea{min-height:75px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}
+.rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.room{padding:13px;text-align:center;border:1px solid #ccd4ce;border-radius:10px}.active{background:#31463b;color:white}
+button{padding:12px 15px;border:0;border-radius:10px;font-size:16px;font-weight:bold;margin-top:12px}.save{background:#31463b;color:white;width:100%}.delete{background:#f4dddd}
+.record{border:1px solid #ddd;border-radius:10px;padding:12px;margin:8px 0}
+@media(max-width:430px){.grid{grid-template-columns:1fr}.rooms{grid-template-columns:1fr 1fr}.full{grid-column:auto}}
+</style></head><body>
+<header><h1>🌿 花自在｜入住系統</h1><small>訂房資料・入住確認</small></header>
+<main><section class="card"><h2>➕ 新增入住</h2>
+<div class="grid">
+<div><label>訂房姓名</label><input id="name"></div><div><label>電話</label><input id="phone" type="tel"></div>
+<div><label>入住日期</label><input id="in" type="date"></div><div><label>退房日期</label><input id="out" type="date"></div>
+<div class="full"><label>房號</label><div class="rooms"><div class="room" data-r="花1">花1</div><div class="room" data-r="花2">花2</div><div class="room" data-r="花3">花3</div><div class="room" data-r="花4">花4</div></div></div>
+<div><label>入住人數</label><input id="people" type="number" value="2"></div>
+<div><label>晚餐用餐時間</label><select id="dinner"><option>不使用</option><option>17:30</option><option>18:00</option><option>18:30</option><option>19:00</option><option>19:30</option><option>20:00</option></select></div>
+<div><label>早餐用餐時間</label><select id="breakfast"><option>不使用</option><option>07:30</option><option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option></select></div>
+<div><label>主餐①</label><input id="m1"></div><div><label>主餐②</label><input id="m2"></div><div><label>主餐③</label><input id="m3"></div><div><label>主餐④</label><input id="m4"></div>
+<div class="full"><label>特殊需求／備註</label><textarea id="note"></textarea></div></div>
+<button class="save" onclick="save()">💾 儲存入住資料</button></section>
+<section class="card"><h2>📋 入住紀錄</h2><div id="list"></div></section></main>
+<script>
+let data=JSON.parse(localStorage.getItem('hua_zizai')||'[]'),room='';
+document.querySelectorAll('.room').forEach(x=>x.onclick=()=>{document.querySelectorAll('.room').forEach(y=>y.classList.remove('active'));x.classList.add('active');room=x.dataset.r});
+function g(id){return document.getElementById(id).value}
+function save(){
+ if(!g('name')||!g('in')||!g('out')||!room){alert('請填寫姓名、入住/退房日期及房號');return}
+ let b={name:g('name'),phone:g('phone'),in:g('in'),out:g('out'),room,people:g('people'),dinner:g('dinner'),breakfast:g('breakfast'),meals:[g('m1'),g('m2'),g('m3'),g('m4')],note:g('note'),id:Date.now()};
+ data.unshift(b);localStorage.setItem('hua_zizai',JSON.stringify(data));render();alert('已儲存！');clear()
+}
+function clear(){['name','phone','in','out','m1','m2','m3','m4','note'].forEach(x=>document.getElementById(x).value='');document.getElementById('people').value=2;document.querySelectorAll('.room').forEach(x=>x.classList.remove('active'));room=''}
+function render(){document.getElementById('list').innerHTML=data.length?data.slice(0,20).map(b=>`<div class="record"><b>${b.name}｜${b.room}</b><br>${b.in} ～ ${b.out}｜${b.people}人<br><button onclick="printOne(${b.id})">🧾 查看／列印</button> <button class="delete" onclick="del(${b.id})">刪除</button></div>`).join(''):'目前沒有資料'}
+function del(id){if(confirm('確定刪除？')){data=data.filter(x=>x.id!==id);localStorage.setItem('hua_zizai',JSON.stringify(data));render()}}
+function printOne(id){let b=data.find(x=>x.id===id);let w=window.open('','_blank');w.document.write(`<html><body style="font-family:Arial;width:80mm"><h2 style="text-align:center">花自在</h2><h3 style="text-align:center">入住確認單</h3><hr>姓名：${b.name}<br>電話：${b.phone}<br>房號：${b.room}<br>人數：${b.people} 人<br>入住：${b.in}<br>退房：${b.out}<br>晚餐：${b.dinner}<br>早餐：${b.breakfast}<br>主餐：${b.meals.filter(Boolean).join('、')||'無'}<br>備註：${b.note||'無'}<hr>客人確認：________________<br><br>簽名：____________________</body></html>`);w.document.close();w.print()}
+render();
+</script></body></html>
